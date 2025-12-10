@@ -1,0 +1,21 @@
+[project]
+name = "qiskit-mcp-server"
+version = "0.1.0"
+description = "MCP server for IBM Quantum using Qiskit"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp",
+    "qiskit>=1.0.0",
+    "qiskit-ibm-runtime>=0.20.0"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+qiskit-mcp-server = "qiskit_mcp_server.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/qiskit_mcp_server"]
