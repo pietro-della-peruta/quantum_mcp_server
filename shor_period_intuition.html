@@ -1,0 +1,82 @@
+
+<style>
+.period-bar { display:flex; gap:4px; align-items:center; margin:6px 0; flex-wrap:wrap; }
+.val-cell { width:38px; height:38px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:500; border:0.5px solid var(--color-border-secondary); color:var(--color-text-primary); flex-shrink:0; }
+.val-cell.highlight { background:#EEEDFE; border-color:#7F77DD; color:#3C3489; }
+.val-cell.period-mark { background:#E1F5EE; border-color:#1D9E75; color:#085041; }
+.ctrl-row { display:flex; align-items:center; gap:14px; margin-bottom:1rem; flex-wrap:wrap; }
+.result-box { background:var(--color-background-secondary); border:0.5px solid var(--color-border-secondary); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--color-text-secondary); margin-top:10px; }
+.result-box strong { color:var(--color-text-primary); font-weight:500; }
+select { font-size:13px; padding:4px 8px; }
+</style>
+
+<div style="padding:1rem 0 0.5rem">
+<div class="ctrl-row">
+  <span style="font-size:13px;color:var(--color-text-secondary)">N =</span>
+  <select id="selN" onchange="recalc()">
+    <option value="15" selected>15</option>
+    <option value="21">21</option>
+    <option value="35">35</option>
+  </select>
+  <span style="font-size:13px;color:var(--color-text-secondary)">a =</span>
+  <select id="selA" onchange="recalc()">
+    <option value="2">2</option>
+    <option value="4">4</option>
+    <option value="7" selected>7</option>
+    <option value="8">8</option>
+    <option value="11">11</option>
+    <option value="13">13</option>
+  </select>
+</div>
+
+<div style="font-size:12px;color:var(--color-text-tertiary);margin-bottom:8px">
+  Valori di a<sup>x</sup> mod N — le celle verdi segnano dove il pattern ricomincia
+</div>
+<div id="bar-container"></div>
+<div class="result-box" id="result-box"></div>
+</div>
+
+<script>
+function gcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
+function recalc(){
+  const N=+document.getElementById('selN').value;
+  const a=+document.getElementById('selA').value;
+  const container=document.getElementById('bar-container');
+  container.innerHTML='';
+  let seq=[], period=0;
+  for(let x=1;x<=40;x++){
+    const v=Math.round(Math.pow(a,x))%N;
+    seq.push(v);
+    if(v===1&&period===0) period=x;
+    if(x>period&&period>0&&x>2*period) break;
+  }
+  const maxShow=Math.min(seq.length,period>0?period*2+1:20);
+  const row=document.createElement('div');
+  row.className='period-bar';
+  for(let i=0;i<maxShow;i++){
+    const cell=document.createElement('div');
+    cell.className='val-cell';
+    if((i+1)===period||(i+1)===2*period) cell.className+=' period-mark';
+    else if(seq[i]===1) cell.className+=' highlight';
+    cell.innerHTML='<span style="font-size:10px;color:var(--color-text-tertiary);position:absolute;transform:translateY(-14px)">'+(i+1)+'</span>'+seq[i];
+    cell.style.position='relative';
+    row.appendChild(cell);
+  }
+  if(seq.length>maxShow){
+    const dots=document.createElement('div');
+    dots.style.cssText='color:var(--color-text-tertiary);font-size:18px;align-self:center;padding:0 4px';
+    dots.textContent='…';
+    row.appendChild(dots);
+  }
+  container.appendChild(row);
+  const rb=document.getElementById('result-box');
+  if(period===0){rb.innerHTML='<strong>Nessun periodo trovato</strong> — prova un altro valore di a';return;}
+  const f1=gcd(Math.round(Math.pow(a,period/2))-1,N);
+  const f2=gcd(Math.round(Math.pow(a,period/2))+1,N);
+  let factorHtml='';
+  if(f1>1&&f1<N) factorHtml+=` MCD(${a}<sup>${period/2}</sup>-1, ${N}) = <strong>${f1}</strong>`;
+  if(f2>1&&f2<N) factorHtml+=`${f1>1&&f1<N?' &nbsp;·&nbsp; ':''}MCD(${a}<sup>${period/2}</sup>+1, ${N}) = <strong>${f2}</strong>`;
+  rb.innerHTML=`Periodo trovato: <strong>r = ${period}</strong> &nbsp;→&nbsp; ${N} = ${f1>1&&f1<N?f1:'?'} × ${f2>1&&f2<N?f2:'?'}&nbsp;&nbsp; ${factorHtml?'<br><span style="font-size:11px;color:var(--color-text-tertiary)">'+factorHtml+'</span>':''}`;
+}
+recalc();
+</script>
